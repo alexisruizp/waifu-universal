@@ -1,0 +1,338 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waifuverse - Galería de Waifus</title>
+    <meta name="description" content="Galería única de waifus de juegos y anime. Explora hermosas waifus con información detallada, imágenes y descripciones.">
+    <meta name="keywords" content="waifus, anime, juegos, galería, genshin impact, honkai star rail, wuthering waves, zenless zone zero">
+    <meta name="author" content="Waifuverse">
+    <meta property="og:title" content="Waifuverse - Galería de Waifus">
+    <meta property="og:description" content="Explora la colección de waifus más hermosa de juegos y anime.">
+    <meta property="og:image" content="{% static 'logo.png' %}">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="{% static 'logo.png' %}" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=Audiowide&display=swap" rel="stylesheet">
+    <link href="{% static 'tooplate-neural-style.css' %}" rel="stylesheet">
+
+</head>
+<body>
+    <canvas id="neural-bg"></canvas>
+
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="#home" class="logo-container">
+                <img src="{% static 'logo.png' %}" alt="Waifus Universal Logo" style="height: 50px; width: auto;">
+                <span class="logo-text">WAIFUVERSE</span>
+            </a>
+
+            <div class="mobile-menu-toggle" id="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="nav-menu" id="nav-menu">
+                <ul>
+                    <li><a href="#home" class="active">HOME</a></li>
+                    <li><a href="#gallery">GALLERY</a></li>
+                    <li><a href="{% url 'add_waifu' %}">ADD WAIFU</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'logout' %}">LOGOUT</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">LOGIN</a></li>
+                        <li><a href="{% url 'register' %}">REGISTER</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="WAIFUVERSE">WAIFUVERSE</h1>
+            <p class="subtitle">Galería de Waifus Única</p>
+        </div>
+        <a href="#gallery" class="scroll-btn">
+            <div class="scroll-btn-inner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+                </svg>
+            </div>
+        </a>
+    </section>
+
+    <section id="about" class="fade-in">
+        <h2 class="section-title">ABOUT</h2>
+        <div class="about-container">
+            <div class="about-image">
+                <div class="profile-img-wrapper">
+                    <div class="profile-img">
+                        <span>AI</span>
+                    </div>
+                </div>
+            </div>
+            <div class="about-content">
+                <h3>Experiencias Digitales de Waifus</h3>
+                <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 20px;">
+                    Bienvenido a Waifus Universal, una colección curada de hermosas waifus de varios juegos y anime.
+                    Explora la galería y descubre información detallada sobre cada personaje.
+                </p>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-secondary);">
+                    Esta galería muestra waifus con sus orígenes, descripciones e imágenes impresionantes.
+                    Haz clic en cualquier waifu para aprender más sobre ellas.
+                </p>
+                <div class="about-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ page_obj.paginator.count }}</div>
+                        <div class="stat-label">Waifus</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ images_count }}</div>
+                        <div class="stat-label">Images</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ category_count }}</div>
+                        <div class="stat-label">Categories</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">Beauty</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if featured_waifu %}
+    <section id="featured" class="fade-in">
+        <h2 class="section-title">WAIFU DE TEMPORADA</h2>
+        <div class="featured-container">
+            <div class="featured-card glass-card featured-glow">
+                <div class="featured-image">
+                    <img src="/media/{{ featured_waifu.image }}" alt="{{ featured_waifu.name }}" class="featured-img">
+                </div>
+                <div class="featured-content">
+                    <h3 class="featured-title">{{ featured_waifu.name }}</h3>
+                    <p class="featured-desc">{{ featured_waifu.description }}</p>
+                    <div class="featured-details">
+                        <h4 class="featured-subtitle">Información Completa:</h4>
+                        <div class="featured-info">{{ featured_waifu.info|linebreaks }}</div>
+                    </div>
+                    <a href="{% url 'waifu_detail' featured_waifu.name %}" class="featured-btn">Ver Más Detalles</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <style>
+    .featured-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .featured-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        padding: 40px;
+        margin: 40px 0;
+    }
+
+    .featured-image img {
+        max-width: 400px;
+        height: auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .featured-content {
+        text-align: center;
+        max-width: 800px;
+    }
+
+    .featured-btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background: var(--primary);
+        color: var(--bg-primary);
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .featured-btn:hover {
+        background: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (min-width: 768px) {
+        .featured-card {
+            flex-direction: row;
+            text-align: left;
+        }
+
+        .featured-content {
+            text-align: left;
+        }
+    }
+    </style>
+
+    <section id="gallery" class="fade-in">
+        <h2 class="section-title">WAIFU GALLERY</h2>
+        <div class="search-container" style="text-align: center; margin-bottom: 30px;">
+            <form method="GET" action="#gallery" style="display: inline-block;">
+                <input type="text" name="q" value="{{ query }}" placeholder="Buscar waifu por nombre, descripción..." style="padding: 10px 15px; border: 1px solid var(--primary); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 1rem; width: 300px; max-width: 90%;">
+                <button type="submit" style="padding: 10px 20px; background: var(--primary); color: var(--bg-primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: 10px;">Buscar</button>
+            </form>
+            <form method="GET" action="#gallery" style="display: inline-block; margin-left: 20px;">
+                <input type="hidden" name="q" value="{{ query }}">
+                <input type="hidden" name="category" value="{{ category_filter }}">
+                <select name="sort" onchange="this.form.submit()" style="padding: 10px 15px; border: 1px solid var(--primary); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 1rem;">
+                    <option value="name" {% if sort == 'name' %}selected{% endif %}>Ordenar por Nombre</option>
+                    <option value="category" {% if sort == 'category' %}selected{% endif %}>Ordenar por Categoría</option>
+                </select>
+            </form>
+        </div>
+        <div class="filter-container" style="text-align: center; margin-bottom: 30px;">
+            <a href="?{% if query %}q={{ query }}&{% endif %}category=all" class="filter-btn {% if not category_filter or category_filter == 'all' %}active{% endif %}">Todas</a>
+            <a href="?{% if query %}q={{ query }}&{% endif %}category=genshin impact" class="filter-btn {% if category_filter == 'genshin impact' %}active{% endif %}">Genshin Impact</a>
+            <a href="?{% if query %}q={{ query }}&{% endif %}category=wuthering waves" class="filter-btn {% if category_filter == 'wuthering waves' %}active{% endif %}">Wuthering Waves</a>
+            <a href="?{% if query %}q={{ query }}&{% endif %}category=zenless zone zero" class="filter-btn {% if category_filter == 'zenless zone zero' %}active{% endif %}">Zenless Zone Zero</a>
+            <a href="?{% if query %}q={{ query }}&{% endif %}category=honkai: star rail" class="filter-btn {% if category_filter == 'honkai: star rail' %}active{% endif %}">Honkai: Star Rail</a>
+            <a href="?{% if query %}q={{ query }}&{% endif %}category=hazbin hotel" class="filter-btn {% if category_filter == 'hazbin hotel' %}active{% endif %}">Hazbin Hotel</a>
+            <a href="?{% if query %}q={{ query }}&{% endif %}category=resident evil" class="filter-btn {% if category_filter == 'resident evil' %}active{% endif %}">Resident Evil</a>
+        </div>
+        <style>
+        .filter-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 8px 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 2px solid var(--primary);
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .filter-btn:hover {
+            background: var(--primary);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .filter-btn.active {
+            background: var(--primary);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+        </style>
+        <div class="projects-grid">
+            {% for waifu in page_obj %}
+            <a href="{% url 'waifu_detail' waifu.name %}" target="_blank" style="text-decoration: none; color: inherit;" data-tooltip="{{ waifu.description }}">
+                <div class="glass-card project-card">
+                    <img src="/media/{{ waifu.image }}" alt="{{ waifu.name }}" style="width: 100%; max-width: 200px; height: auto; border-radius: 8px; margin-bottom: 10px;">
+                    <h3 style="color: var(--primary);">{{ waifu.name }}</h3>
+                    <p style="color: var(--text-secondary);">{{ waifu.description }}</p>
+                    <span style="display: inline-block; padding: 4px 8px; background: var(--primary); color: var(--bg-primary); border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-top: 8px;">{{ waifu.category }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="pagination" style="text-align: center; margin-top: 30px;">
+            {% if page_obj.has_other_pages %}
+                <div class="pagination-controls">
+                    {% if page_obj.has_previous %}
+                        <a href="?{% if query %}q={{ query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page=1" class="page-link">Primera</a>
+                        <a href="?{% if query %}q={{ query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" class="page-link">Anterior</a>
+                    {% endif %}
+
+                    <span class="current-page">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?{% if query %}q={{ query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page={{ page_obj.next_page_number }}" class="page-link">Siguiente</a>
+                        <a href="?{% if query %}q={{ query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page={{ page_obj.paginator.num_pages }}" class="page-link">Última</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        <style>
+        .pagination-controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-link {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: var(--bg-primary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .page-link:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+        .current-page {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        </style>
+        {% if not waifus %}
+        {% if query or category_filter %}
+        <p style="text-align: center; color: var(--text-secondary);">No se encontraron waifus que coincidan con los filtros aplicados.</p>
+        {% else %}
+        <p style="text-align: center; color: var(--text-secondary);">No se encontraron waifus. Asegúrate de que las imágenes estén en las carpetas.</p>
+        {% endif %}
+        {% endif %}
+    </section>
+
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
+                    <li><a href="/info/">Info</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Waifus</h3>
+                <ul>
+                    <li><a href="#gallery">Ver Galería</a></li>
+                    <li><a href="/info/">Información</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Connect</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;">
+                    Explora la colección de waifus
+                </p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Waifuverse.</p>
+        </div>
+    </footer>
+<script src="{% static 'tooplate-neural-scripts.js' %}"></script>
+
+</body>
+</html>

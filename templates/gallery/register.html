@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse - Waifuverse</title>
+    <link rel="icon" href="{% static 'logo.png' %}" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=Audiowide&display=swap" rel="stylesheet">
+    <link href="{% static 'tooplate-neural-style.css' %}" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        .form-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            outline: none;
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .login-link a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="neural-bg"></canvas>
+
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="{% url 'waifus_gallery' %}" class="logo-container">
+                <img src="{% static 'logo.png' %}" alt="Waifus Universal Logo" style="height: 50px; width: auto;">
+                <span class="logo-text">WAIFUVERSE</span>
+            </a>
+
+            <div class="mobile-menu-toggle" id="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="nav-menu" id="nav-menu">
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">GALLERY</a></li>
+                    <li><a href="/info/">INFO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="REGISTRARSE">REGISTRARSE</h1>
+            <p class="subtitle">Crea tu cuenta</p>
+        </div>
+    </section>
+
+    <section class="fade-in">
+        <div class="form-container glass-card">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <p class="{% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">👤 Nombre de Usuario:</label>
+                    <input type="text" id="username" name="username" required placeholder="Elige un nombre de usuario">
+                </div>
+
+                <div class="form-group">
+                    <label for="password1">🔒 Contraseña:</label>
+                    <input type="password" id="password1" name="password1" required placeholder="Crea una contraseña segura">
+                </div>
+
+                <div class="form-group">
+                    <label for="password2">🔒 Confirmar Contraseña:</label>
+                    <input type="password" id="password2" name="password2" required placeholder="Repite la contraseña">
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="submit-btn">🚀 Registrarse</button>
+                </div>
+            </form>
+
+            <div class="login-link">
+                <p>¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">Gallery</a></li>
+                    <li><a href="/info/">Info</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Waifus</h3>
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">Ver Galería</a></li>
+                    <li><a href="/info/">Información</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Connect</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;">
+                    Regístrate para acceder a más funciones
+                </p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Waifuverse.</p>
+        </div>
+    </footer>
+    <script src="{% static 'tooplate-neural-scripts.js' %}"></script>
+</body>
+</html>

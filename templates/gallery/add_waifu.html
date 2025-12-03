@@ -1,0 +1,262 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Añadir Waifu - Waifuverse</title>
+    <link rel="icon" href="{% static 'logo.png' %}" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=Audiowide&display=swap" rel="stylesheet">
+    <link href="{% static 'tooplate-neural-style.css' %}" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        .form-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            outline: none;
+        }
+        textarea {
+            height: 180px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        select {
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1em;
+            padding: 12px 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+        }
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            outline: none;
+        }
+        select:hover {
+            border-color: var(--primary);
+            background-color: rgba(255, 255, 255, 0.12);
+        }
+        .file-input {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .file-input:hover {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .success {
+            color: #51cf66;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        .checkbox-group label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="neural-bg"></canvas>
+
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="{% url 'waifus_gallery' %}" class="logo-container">
+                <img src="{% static 'logo.png' %}" alt="Waifus Universal Logo" style="height: 50px; width: auto;">
+                <span class="logo-text">WAIFUVERSE</span>
+            </a>
+
+            <div class="mobile-menu-toggle" id="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="nav-menu" id="nav-menu">
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">GALLERY</a></li>
+                    <li><a href="/info/">INFO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="AÑADIR WAIFU">AÑADIR WAIFU</h1>
+            <p class="subtitle">Añade una nueva waifu a la colección</p>
+        </div>
+    </section>
+
+    <section class="fade-in">
+        <div class="form-container glass-card">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <p class="{% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">📝 Nombre de la Waifu:</label>
+                    <input type="text" id="name" name="name" required placeholder="Ingresa el nombre de la waifu">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">🎮 Categoría (Juego/Anime):</label>
+                    <input type="text" id="category" name="category" required placeholder="Ej: Genshin Impact, Wuthering Waves, etc." list="categories">
+                    <datalist id="categories">
+                        <option value="Genshin Impact">
+                        <option value="Wuthering Waves">
+                        <option value="Zenless Zone Zero">
+                        <option value="Honkai: Star Rail">
+                        <option value="Hazbin Hotel">
+                        <option value="Resident Evil">
+                        <option value="League of Legends">
+                        <option value="Otros">
+                    </datalist>
+                    <small style="color: var(--text-secondary); font-style: italic;">💡 Elige o escribe el juego/anime de origen. ¡Puedes añadir nuevas categorías!</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">📖 Descripción Completa:</label>
+                    <textarea id="description" name="description" required placeholder="Describe el origen, personalidad, lore y por qué es hermosa... Incluye detalles fascinantes sobre su historia y características únicas."></textarea>
+                    <small style="color: var(--text-secondary); font-style: italic;">💡 Sé creativo y positivo en tu descripción para hacerla destacar</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="images">🖼️ Imágenes de la Waifu (mínimo 4):</label>
+                    <input type="file" id="images" name="images" accept="image/*" multiple required class="file-input">
+                    <small style="color: var(--text-secondary); font-style: italic;">💡 Sube imágenes de alta calidad que muestren su belleza. Formatos: JPG, PNG, GIF</small>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="set_featured" name="set_featured">
+                        <label for="set_featured">🌟 Establecer como Waifu de Temporada</label>
+                    </div>
+                    <small style="color: var(--text-secondary); font-style: italic;">💡 ¡Hazla la estrella de la galería!</small>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="submit-btn">✨ Añadir Waifu a la Colección</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">Gallery</a></li>
+                    <li><a href="/info/">Info</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Waifus</h3>
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">Ver Galería</a></li>
+                    <li><a href="/info/">Información</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Connect</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;">
+                    Añade más waifus a la colección
+                </p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Waifuverse.</p>
+        </div>
+    </footer>
+    <script src="{% static 'tooplate-neural-scripts.js' %}"></script>
+</body>
+</html>

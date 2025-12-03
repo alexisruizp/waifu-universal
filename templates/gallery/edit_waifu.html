@@ -1,0 +1,331 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar {{ name }} - Waifuverse</title>
+    <link rel="icon" href="{% static 'logo.png' %}" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=Audiowide&display=swap" rel="stylesheet">
+    <link href="{% static 'tooplate-neural-style.css' %}" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        .form-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            outline: none;
+        }
+        textarea {
+            height: 180px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        .file-input {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .file-input:hover {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .success {
+            color: #51cf66;
+        }
+        .current-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .current-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .image-container {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .image-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        .current-images img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+        }
+        .delete-checkbox {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 71, 87, 0.9);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .delete-checkbox:hover {
+            background: rgba(255, 71, 87, 1);
+            transform: scale(1.1);
+        }
+        .delete-checkbox:checked {
+            background: #ff4757;
+            border-color: #ff3742;
+        }
+        .delete-label {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+            background: rgba(255, 71, 87, 0.9);
+            border: 2px solid #fff;
+            transition: all 0.3s ease;
+        }
+        .delete-label:hover {
+            background: rgba(255, 71, 87, 1);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="neural-bg"></canvas>
+
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="{% url 'waifu_detail' name %}" class="logo-container">
+                <img src="{% static 'logo.png' %}" alt="Waifus Universal Logo" style="height: 50px; width: auto;">
+                <span class="logo-text">WAIFUVERSE</span>
+            </a>
+
+            <div class="mobile-menu-toggle" id="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="nav-menu" id="nav-menu">
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">GALLERY</a></li>
+                    <li><a href="/info/">INFO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="EDITAR {{ name|upper }}">✏️ EDITAR {{ name|upper }}</h1>
+            <p class="subtitle">🎨 Modifica la información y administra las imágenes de tu waifu</p>
+        </div>
+    </section>
+
+    <section class="fade-in">
+        <div class="form-container glass-card">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <p class="{% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">📝 Nombre de la Waifu:</label>
+                    <input type="text" id="name" name="name" value="{{ name }}" required placeholder="Ingresa el nombre de la waifu">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">📖 Descripción:</label>
+                    <textarea id="description" name="description" required placeholder="Describe la personalidad, origen y características de la waifu...">{{ info }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size: 1.2em; margin-bottom: 15px; display: block;">🖼️ Imágenes actuales:</label>
+                    <div class="current-images">
+                        {% for image in images %}
+                            <div class="image-container">
+                                <img src="/media/{{ image.path }}" alt="Imagen actual">
+                                <input type="checkbox" name="delete_images" value="{{ image.filename }}" id="delete_{{ forloop.counter }}" class="delete-checkbox" style="display: none;">
+                                <label for="delete_{{ forloop.counter }}" class="delete-label">✕</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <small style="color: var(--text-secondary); font-style: italic;">💡 Haz clic en la ❌ para marcar imágenes a eliminar</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="images">📤 Añadir nuevas imágenes (opcional):</label>
+                    <input type="file" id="images" name="images" accept="image/*" multiple class="file-input">
+                    <small style="color: var(--text-secondary); font-style: italic;">💡 Puedes añadir más imágenes a la colección existente. Formatos: JPG, PNG, GIF</small>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="submit-btn">✨ Actualizar Waifu</button>
+                </div>
+            </form>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid var(--border);">
+
+            <div style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(255, 71, 87, 0.1); border-radius: 10px; border: 2px solid rgba(255, 71, 87, 0.3);">
+                <button type="button" class="submit-btn" style="background: linear-gradient(135deg, #ff4757, #ff3742); border: none; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);" onclick="confirmDeleteWaifu()">
+                    🗑️ 💀 ELIMINAR WAIFU COMPLETA 💀 🗑️
+                </button>
+                <p style="color: #ff6b6b; margin-top: 10px; font-size: 0.9em; font-style: italic;">⚠️ Esta acción es irreversible</p>
+            </div>
+
+            <script>
+                function confirmDeleteWaifu() {
+                    if (confirm('⚠️ ¡ATENCIÓN! Estás a punto de eliminar esta waifu COMPLETAMENTE.')) {
+                        if (confirm('💀 Esto eliminará TODAS las imágenes y la información de "{{ name }}" para SIEMPRE.')) {
+                            if (confirm('😱 ¿Estás 100% seguro? No hay vuelta atrás después de esto.')) {
+                                if (confirm('🚨 ¡ÚLTIMA ADVERTENCIA! "{{ name }}" desaparecerá de la galería. ¿Continuar?')) {
+                                    // Crear un formulario oculto para enviar la solicitud de eliminación
+                                    var form = document.createElement('form');
+                                    form.method = 'POST';
+                                    form.action = '{% url "edit_waifu" name %}';
+
+                                    // Agregar CSRF token
+                                    var csrfInput = document.createElement('input');
+                                    csrfInput.type = 'hidden';
+                                    csrfInput.name = 'csrfmiddlewaretoken';
+                                    csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    form.appendChild(csrfInput);
+
+                                    // Agregar campo para indicar eliminación completa
+                                    var deleteInput = document.createElement('input');
+                                    deleteInput.type = 'hidden';
+                                    deleteInput.name = 'delete_waifu';
+                                    deleteInput.value = 'true';
+                                    form.appendChild(deleteInput);
+
+                                    document.body.appendChild(form);
+                                    form.submit();
+                                }
+                            }
+                        }
+                    }
+                }
+            </script>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">Gallery</a></li>
+                    <li><a href="/info/">Info</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Waifus</h3>
+                <ul>
+                    <li><a href="{% url 'waifus_gallery' %}">Ver Galería</a></li>
+                    <li><a href="/info/">Información</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Connect</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;">
+                    Modifica la información de las waifus
+                </p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Waifuverse.</p>
+        </div>
+    </footer>
+    <script src="{% static 'tooplate-neural-scripts.js' %}"></script>
+</body>
+</html>
