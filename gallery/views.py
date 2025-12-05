@@ -5,9 +5,17 @@ from django.conf import settings
 import re
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
 from django.views.decorators.cache import cache_page
+from PIL import Image
+import random
+
+def generate_thumbnail(image_path, thumb_path, size=(200, 200)):
+    try:
+        with Image.open(image_path) as img:
+            img.thumbnail(size)
+            img.save(thumb_path)
+    except Exception as e:
+        print(f"Error generating thumbnail: {e}")
 
 def parse_waifu_info():
     info_path = os.path.join(settings.BASE_DIR, 'informacion de las waifus.txt')
@@ -85,10 +93,16 @@ def waifus_gallery(request):
                         if not description:
                             description = f'Descripción de {featured_name}.'
                         info = description
+                        # Usar miniatura si existe
+                        thumb_path = os.path.join(featured_path, 'thumbs', images[0])
+                        if os.path.exists(thumb_path):
+                            image_path = os.path.join('waifus', featured_folder, 'thumbs', images[0])
+                        else:
+                            image_path = os.path.join('waifus', featured_folder, images[0])
                         featured_waifu = {
                             'name': featured_name,
                             'folder': featured_folder,
-                            'image': os.path.join('waifus', featured_folder, images[0]),
+                            'image': image_path,
                             'description': description[:300] + '...' if len(description) > 300 else description,
                             'info': info,
                             'category': category
@@ -116,10 +130,16 @@ def waifus_gallery(request):
                             break
                 if not description:
                     description = f'Descripción de {folder}. Origen: Gacha.'
+                # Usar miniatura si existe
+                thumb_path = os.path.join(folder_path, 'thumbs', images[0])
+                if os.path.exists(thumb_path):
+                    image_path = os.path.join('waifus', folder, 'thumbs', images[0])
+                else:
+                    image_path = os.path.join('waifus', folder, images[0])
                 waifu_data = {
                     'name': name,
                     'folder': folder,
-                    'image': os.path.join('waifus', folder, images[0]),  # Ruta relativa para media
+                    'image': image_path,  # Ruta relativa para media
                     'description': description[:200] + '...' if len(description) > 200 else description,  # Shorten for main page
                     'category': category
                 }
@@ -211,6 +231,11 @@ def add_waifu(request):
             with open(image_path, 'wb+') as f:
                 for chunk in image.chunks():
                     f.write(chunk)
+            # Generar miniatura
+            thumb_folder = os.path.join(waifu_folder, 'thumbs')
+            os.makedirs(thumb_folder, exist_ok=True)
+            thumb_path = os.path.join(thumb_folder, image.name)
+            generate_thumbnail(image_path, thumb_path)
 
         # Actualizar archivo de información
         info_path = os.path.join(settings.BASE_DIR, 'informacion de las waifus.txt')
@@ -321,6 +346,11 @@ def edit_waifu(request, name):
                 with open(image_path, 'wb+') as f:
                     for chunk in image.chunks():
                         f.write(chunk)
+                # Generar miniatura
+                thumb_folder = os.path.join(folder_path, 'thumbs')
+                os.makedirs(thumb_folder, exist_ok=True)
+                thumb_path = os.path.join(thumb_folder, image.name)
+                generate_thumbnail(image_path, thumb_path)
 
         messages.success(request, f'Waifu {name} actualizada exitosamente.')
         return redirect('waifu_detail', name=name)
@@ -335,16 +365,26 @@ def edit_waifu(request, name):
         'info': info
     })
 
-def register(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('waifus_gallery')
-    else:
-        form = UserCreationForm()
-    return render(request, 'gallery/register.html', {'form': form})
+def set_featured(request, name):
+    featured_file = os.path.join(settings.BASE_DIR, 'featured_waifu.txt')
+    with open(featured_file, 'w', encoding='utf-8') as f:
+        f.write(name)
+    messages.success(request, f'{name} establecida como waifu destacada. 🌟')
+    return redirect('waifus_gallery')
+
+def random_waifu(request):
+    waifus_root = os.path.join(settings.BASE_DIR, 'waifus')
+    waifus = []
+    for folder in os.listdir(waifus_root):
+        folder_path = os.path.join(waifus_root, folder)
+        if os.path.isdir(folder_path):
+            images = [f for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+            if images:
+                waifus.append(folder.replace('_', ' ').title())
+    if waifus:
+        random_name = random.choice(waifus)
+        return redirect('waifu_detail', name=random_name)
+    return redirect('waifus_gallery')
 
 def backup(request):
     file_path = os.path.join(settings.BASE_DIR, 'informacion de las waifus.txt')

@@ -1,0 +1,15 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página no encontrada - Waifuverse</title>
+    <link href="{% static 'tooplate-neural-style.css' %}" rel="stylesheet">
+</head>
+<body style="background: var(--bg-primary); color: var(--text-primary); text-align: center; padding: 50px;">
+    <h1 style="color: var(--primary);">404 - Página no encontrada</h1>
+    <p>Lo sentimos, la página que buscas no existe.</p>
+    <a href="{% url 'waifus_gallery' %}" style="color: var(--accent);">Volver a la galería</a>
+</body>
+</html>

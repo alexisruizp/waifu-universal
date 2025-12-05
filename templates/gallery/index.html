@@ -18,6 +18,60 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=Audiowide&display=swap" rel="stylesheet">
     <link href="{% static 'tooplate-neural-style.css' %}" rel="stylesheet">
 
+    <style>
+    html {
+        scroll-behavior: smooth;
+    }
+    .back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--primary);
+        color: var(--bg-primary);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+    .back-to-top.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    .back-to-top:hover {
+        background: var(--accent);
+        transform: scale(1.1);
+    }
+
+    .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 10px;
+        transition: all 0.3s ease;
+    }
+    .theme-toggle:hover {
+        color: var(--primary);
+        transform: scale(1.1);
+    }
+
+    body.dark-mode {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2a2a2a;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+        --primary: #00ffff;
+        --accent: #ff00ff;
+    }
+    </style>
+
 </head>
 <body>
     <canvas id="neural-bg"></canvas>
@@ -40,13 +94,9 @@
                     <li><a href="#home" class="active">HOME</a></li>
                     <li><a href="#gallery">GALLERY</a></li>
                     <li><a href="{% url 'add_waifu' %}">ADD WAIFU</a></li>
-                    {% if user.is_authenticated %}
-                        <li><a href="{% url 'logout' %}">LOGOUT</a></li>
-                    {% else %}
-                        <li><a href="{% url 'login' %}">LOGIN</a></li>
-                        <li><a href="{% url 'register' %}">REGISTER</a></li>
-                    {% endif %}
+                    <li><a href="{% url 'random_waifu' %}">RANDOM</a></li>
                 </ul>
+                <button id="theme-toggle" class="theme-toggle" title="Cambiar tema">🌙</button>
             </div>
         </div>
     </nav>
@@ -113,7 +163,7 @@
         <div class="featured-container">
             <div class="featured-card glass-card featured-glow">
                 <div class="featured-image">
-                    <img src="/media/{{ featured_waifu.image }}" alt="{{ featured_waifu.name }}" class="featured-img">
+                    <img src="/media/{{ featured_waifu.image }}" alt="{{ featured_waifu.name }}" class="featured-img" loading="lazy">
                 </div>
                 <div class="featured-content">
                     <h3 class="featured-title">{{ featured_waifu.name }}</h3>
@@ -193,29 +243,31 @@
                 <input type="text" name="q" value="{{ query }}" placeholder="Buscar waifu por nombre, descripción..." style="padding: 10px 15px; border: 1px solid var(--primary); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 1rem; width: 300px; max-width: 90%;">
                 <button type="submit" style="padding: 10px 20px; background: var(--primary); color: var(--bg-primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: 10px;">Buscar</button>
             </form>
-            <form method="GET" action="#gallery" style="display: inline-block; margin-left: 20px;">
-                <input type="hidden" name="q" value="{{ query }}">
-                <input type="hidden" name="category" value="{{ category_filter }}">
-                <select name="sort" onchange="this.form.submit()" style="padding: 10px 15px; border: 1px solid var(--primary); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 1rem;">
-                    <option value="name" {% if sort == 'name' %}selected{% endif %}>Ordenar por Nombre</option>
-                    <option value="category" {% if sort == 'category' %}selected{% endif %}>Ordenar por Categoría</option>
-                </select>
-            </form>
         </div>
         <div class="filter-container" style="text-align: center; margin-bottom: 30px;">
-            <a href="?{% if query %}q={{ query }}&{% endif %}category=all" class="filter-btn {% if not category_filter or category_filter == 'all' %}active{% endif %}">Todas</a>
-            <a href="?{% if query %}q={{ query }}&{% endif %}category=genshin impact" class="filter-btn {% if category_filter == 'genshin impact' %}active{% endif %}">Genshin Impact</a>
-            <a href="?{% if query %}q={{ query }}&{% endif %}category=wuthering waves" class="filter-btn {% if category_filter == 'wuthering waves' %}active{% endif %}">Wuthering Waves</a>
-            <a href="?{% if query %}q={{ query }}&{% endif %}category=zenless zone zero" class="filter-btn {% if category_filter == 'zenless zone zero' %}active{% endif %}">Zenless Zone Zero</a>
-            <a href="?{% if query %}q={{ query }}&{% endif %}category=honkai: star rail" class="filter-btn {% if category_filter == 'honkai: star rail' %}active{% endif %}">Honkai: Star Rail</a>
-            <a href="?{% if query %}q={{ query }}&{% endif %}category=hazbin hotel" class="filter-btn {% if category_filter == 'hazbin hotel' %}active{% endif %}">Hazbin Hotel</a>
-            <a href="?{% if query %}q={{ query }}&{% endif %}category=resident evil" class="filter-btn {% if category_filter == 'resident evil' %}active{% endif %}">Resident Evil</a>
-        </div>
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}category=all" class="filter-btn {% if not category_filter or category_filter == 'all' %}active{% endif %}">Todas</a>
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}category=genshin impact" class="filter-btn {% if category_filter == 'genshin impact' %}active{% endif %}">Genshin Impact</a>
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}category=wuthering waves" class="filter-btn {% if category_filter == 'wuthering waves' %}active{% endif %}">Wuthering Waves</a>
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}category=zenless zone zero" class="filter-btn {% if category_filter == 'zenless zone zero' %}active{% endif %}">Zenless Zone Zero</a>
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}category=honkai: star rail" class="filter-btn {% if category_filter == 'honkai: star rail' %}active{% endif %}">Honkai: Star Rail</a>
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}category=hazbin hotel" class="filter-btn {% if category_filter == 'hazbin hotel' %}active{% endif %}">Hazbin Hotel</a>
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}category=resident evil" class="filter-btn {% if category_filter == 'resident evil' %}active{% endif %}">Resident Evil</a>
+         </div>
+         <div class="sort-container">
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}sort=name" class="filter-btn {% if sort == 'name' %}active{% endif %}">Ordenar por Nombre</a>
+             <a href="?{% if query %}q={{ query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}sort=category" class="filter-btn {% if sort == 'category' %}active{% endif %}">Ordenar por Categoría</a>
+         </div>
         <style>
+        .filter-container, .sort-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
         .filter-btn {
             display: inline-block;
             padding: 10px 20px;
-            margin: 0 8px 10px 0;
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-primary);
             border: 2px solid var(--primary);
@@ -225,6 +277,21 @@
             font-size: 0.9em;
             transition: all 0.3s ease;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .filter-btn:hover::before {
+            left: 100%;
         }
         .filter-btn:hover {
             background: var(--primary);
@@ -236,18 +303,42 @@
             background: var(--primary);
             color: var(--bg-primary);
             box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+            animation: pulseActive 2s infinite;
+        }
+        @keyframes pulseActive {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        </style>
+
+        <style>
+        .animate-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .animate-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        .animate-card img {
+            transition: transform 0.3s ease;
+        }
+        .animate-card:hover img {
+            transform: scale(1.1);
         }
         </style>
         <div class="projects-grid">
             {% for waifu in page_obj %}
-            <a href="{% url 'waifu_detail' waifu.name %}" target="_blank" style="text-decoration: none; color: inherit;" data-tooltip="{{ waifu.description }}">
-                <div class="glass-card project-card">
-                    <img src="/media/{{ waifu.image }}" alt="{{ waifu.name }}" style="width: 100%; max-width: 200px; height: auto; border-radius: 8px; margin-bottom: 10px;">
-                    <h3 style="color: var(--primary);">{{ waifu.name }}</h3>
-                    <p style="color: var(--text-secondary);">{{ waifu.description }}</p>
-                    <span style="display: inline-block; padding: 4px 8px; background: var(--primary); color: var(--bg-primary); border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-top: 8px;">{{ waifu.category }}</span>
-                </div>
-            </a>
+            <div style="position: relative;">
+                <a href="{% url 'waifu_detail' waifu.name %}" target="_blank" style="text-decoration: none; color: inherit;" data-tooltip="{{ waifu.description }}">
+                    <div class="glass-card project-card animate-card">
+                        <img src="/media/{{ waifu.image }}" alt="{{ waifu.name }}" style="width: 100%; max-width: 200px; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" loading="lazy">
+                        <h3 style="color: var(--primary);">{{ waifu.name }}</h3>
+                        <p style="color: var(--text-secondary);">{{ waifu.description }}</p>
+                        <span style="display: inline-block; padding: 4px 8px; background: var(--primary); color: var(--bg-primary); border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-top: 8px;">{{ waifu.category }}</span>
+                    </div>
+                </a>
+            </div>
             {% endfor %}
         </div>
         <div class="pagination" style="text-align: center; margin-top: 30px;">
@@ -332,7 +423,48 @@
             <p>&copy; 2025 Waifuverse.</p>
         </div>
     </footer>
+
+    <button class="back-to-top" id="backToTop" title="Volver arriba">↑</button>
+
 <script src="{% static 'tooplate-neural-scripts.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const backToTopBtn = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
+        }
+    });
+
+    backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    // Dark mode toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+
+    if (currentTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeToggle.textContent = '☀️';
+    } else {
+        themeToggle.textContent = '🌙';
+    }
+
+    themeToggle.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+        localStorage.setItem('theme', theme);
+        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+});
+</script>
 
 </body>
 </html>
